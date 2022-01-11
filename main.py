@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from bt_proximity import BluetoothRSSI
 import time
 import sys, getopt
