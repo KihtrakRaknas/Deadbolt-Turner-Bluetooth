@@ -104,6 +104,7 @@ async def open_door():
 
         gpio.output(25, False)  # Motor goes back to sleeping
         asyncio.create_task(notif_call("close%20door"))
+        await asyncio.sleep(2)
 
 
 def server():
