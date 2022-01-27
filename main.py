@@ -72,8 +72,8 @@ async def main():
                 old_rssi = rssi
                 asyncio.create_task(notif_call("phone%20detected"))
             else:
-                print(str(all(-20 <= el < 0 for el in (old_rssis[-5:]))) + " & " + str(not all(-40 <= el <= 0 for el in (old_rssis[:90]))))
-                if all(-20 <= el < 0 for el in (old_rssis[-5:])) and not all(-40 <= el <= 0 for el in (old_rssis[:90])):
+                print(str(all(-20 <= el <= 0 for el in (old_rssis[-5:]))) + " & " + str(not any(-30 <= el <= 0 for el in (old_rssis[:85]))))
+                if all(-20 <= el <= 0 for el in (old_rssis[-5:])) and not any(-30 <= el <= 0 for el in (old_rssis[:85])):
                     asyncio.create_task(open_door())
         await asyncio.sleep(1)
 
@@ -88,23 +88,24 @@ async def open_door():
         gpio.output(23, False) # Set the direction
 
         StepCounter = 0
-        WaitTime = 0.0005
-        Steps = 3500
+        WaitTime = 0.00001
+        Steps = 4200
         while StepCounter < Steps:
             # turning the gpio on and off tells the easy driver to take one step
             gpio.output(24, True)
+            #time.sleep(WaitTime)
+            #time.sleep(WaitTime)
             gpio.output(24, False)
             StepCounter += 1
 
             # Wait before taking the next step...this controls rotation speed
-            time.sleep(WaitTime)
-            # await asyncio.sleep(WaitTime)
+            #time.sleep(WaitTime)
+            await asyncio.sleep(WaitTime)
 
         await asyncio.sleep(15)
 
         gpio.output(25, False)  # Motor goes back to sleeping
         asyncio.create_task(notif_call("close%20door"))
-        await asyncio.sleep(2)
 
 
 def server():
