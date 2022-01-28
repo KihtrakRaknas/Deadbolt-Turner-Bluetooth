@@ -99,8 +99,8 @@ async def open_door():
             StepCounter += 1
 
             # Wait before taking the next step...this controls rotation speed
-            #time.sleep(WaitTime)
-            await asyncio.sleep(WaitTime)
+            time.sleep(WaitTime)
+            #await asyncio.sleep(WaitTime)
 
         await asyncio.sleep(15)
 
