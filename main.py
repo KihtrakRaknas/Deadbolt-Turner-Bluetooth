@@ -75,7 +75,7 @@ async def main():
                 print(str(all(-20 <= el <= 0 for el in (old_rssis[-5:]))) + " & " + str(not any(-20 <= el <= 0 for el in (old_rssis[:85]))))
                 if all(-20 <= el <= 0 for el in (old_rssis[-5:])) and not any(-20 <= el <= 0 for el in (old_rssis[:85])):
                     asyncio.create_task(open_door())
-        await asyncio.sleep(1)
+        await asyncio.sleep(.01)
 
 
 async def open_door():
