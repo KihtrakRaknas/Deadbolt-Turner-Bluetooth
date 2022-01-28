@@ -101,7 +101,8 @@ async def open_door():
             #await asyncio.sleep(WaitTime)
 
         await asyncio.sleep(15)
-
+        
+        StepCounter = 0
         while StepCounter < Steps:
             gpio.output(23, True) # Reverse direction
             # turning the gpio on and off tells the easy driver to take one step
