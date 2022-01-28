@@ -72,8 +72,8 @@ async def main():
                 old_rssi = rssi
                 asyncio.create_task(notif_call("phone%20detected"))
             else:
-                print(str(all(-20 <= el <= 0 for el in (old_rssis[-5:]))) + " & " + str(not any(-30 <= el <= 0 for el in (old_rssis[:85]))))
-                if all(-20 <= el <= 0 for el in (old_rssis[-5:])) and not any(-30 <= el <= 0 for el in (old_rssis[:85])):
+                print(str(all(-20 <= el <= 0 for el in (old_rssis[-5:]))) + " & " + str(not any(-20 <= el <= 0 for el in (old_rssis[:85]))))
+                if all(-20 <= el <= 0 for el in (old_rssis[-5:])) and not any(-20 <= el <= 0 for el in (old_rssis[:85])):
                     asyncio.create_task(open_door())
         await asyncio.sleep(1)
 
