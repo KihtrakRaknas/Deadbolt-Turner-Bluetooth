@@ -89,7 +89,7 @@ async def open_door():
 
         StepCounter = 0
         WaitTime = 0.0001
-        Steps = 4700
+        Steps = 4800
         while StepCounter < Steps:
             # turning the gpio on and off tells the easy driver to take one step
             gpio.output(24, True)
