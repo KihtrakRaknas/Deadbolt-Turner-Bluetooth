@@ -7,6 +7,7 @@ import RPi.GPIO as gpio  # https://pypi.python.org/pypi/RPi.GPIO more info
 import atexit
 import asyncio
 import threading
+import datetime
 from flask import Flask, request
 app = Flask(__name__)
 
@@ -18,6 +19,7 @@ motor_lock = asyncio.Lock()
 
 notibot_project = ''
 password = ''
+guestpassword = ''
 
 async def main():
     BT_ADDR = ''
@@ -38,6 +40,9 @@ async def main():
         elif opt in ("-p", "--password"):
             global password
             password = arg
+        elif opt in ("-g", "--guestpassword"):
+            global guestpassword
+            guestpassword = arg
     if BT_ADDR == '':
         print('USAGE: main.py -b <bluetoothaddress>')
         sys.exit()
@@ -122,11 +127,21 @@ def server():
     @app.route('/webhook', methods=['GET', 'POST'])
     def respond():
         print("webhook called");
-        if password != "" and request.json["password"] != password:
-            return 'Invalid Password';
-        asyncio.run_coroutine_threadsafe(open_door(), loop)
-        return 'Done'
-
+        valid = false
+        if password == "":
+            valid = true
+        if request.json["password"] == password:
+            valid = true
+        if request.json["password"] == guestpassword:
+            now = datetime.datetime.now()
+            # Monday is 0
+            if (1 == now.weekday() or 3 == now.weekday()) and datetime.time(hour=8, minute=30) <= now.time() <= datetime.time(hour=9, minute=30):
+                valid = true
+            await requests.get('https://n.kihtrak.com/?project='+notibot_project+'&title=Guest%20Door%20Open%20Request&body=Valid:%20'+str(valid))
+        if valid:
+            asyncio.run_coroutine_threadsafe(open_door(), loop)
+            return 'Done'
+        return 'Invalid Password';
     from waitress import serve
     serve(app, host="0.0.0.0", port=8080)
     # app.run()
