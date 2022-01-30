@@ -77,8 +77,8 @@ async def main():
                 old_rssi = rssi
                 asyncio.create_task(notif_call("phone%20detected"))
             else:
-                print(str(all(-25 <= el <= 0 for el in (old_rssis[-5:]))) + " & " + str(not any(-25 <= el <= 0 for el in (old_rssis[:80]))))
-                if all(-25 <= el <= 0 for el in (old_rssis[-5:])) and not any(-25 <= el <= 0 for el in (old_rssis[:80])):
+                print(str(all(-20 <= el <= 0 for el in (old_rssis[-5:]))) + " & " + str(not any(-20 <= el <= 0 for el in (old_rssis[:70]))))
+                if all(-20 <= el <= 0 for el in (old_rssis[-5:])) and not any(-20 <= el <= 0 for el in (old_rssis[:70])):
                     asyncio.create_task(open_door())
         await asyncio.sleep(1)
 
@@ -93,7 +93,7 @@ async def open_door():
         gpio.output(23, False) # Set the direction
 
         StepCounter = 0
-        WaitTime = 0.0005
+        WaitTime = 0.0002
         Steps = 4800
         while StepCounter < Steps:
             # turning the gpio on and off tells the easy driver to take one step
