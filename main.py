@@ -24,7 +24,7 @@ guestpassword = ''
 async def main():
     BT_ADDR = ''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hb:n:p:", ["bluetoothaddress=", "notibotproject=", "password="])
+        opts, args = getopt.getopt(sys.argv[1:], "hb:n:p:g:", ["bluetoothaddress=", "notibotproject=", "password=","guestpassword="])
     except getopt.GetoptError:
         print('USAGE: main.py -b <bluetoothaddress> [-n <notibotproject>] [-p <password>]')
         sys.exit(2)
