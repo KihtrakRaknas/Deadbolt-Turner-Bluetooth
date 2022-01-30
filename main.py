@@ -127,17 +127,17 @@ def server():
     @app.route('/webhook', methods=['GET', 'POST'])
     def respond():
         print("webhook called");
-        valid = false
+        valid = False
         if password == "":
-            valid = true
+            valid = True
         if request.json["password"] == password:
-            valid = true
+            valid = True
         if request.json["password"] == guestpassword:
             now = datetime.datetime.now()
             # Monday is 0
             if (1 == now.weekday() or 3 == now.weekday()) and datetime.time(hour=8, minute=30) <= now.time() <= datetime.time(hour=9, minute=30):
-                valid = true
-            await requests.get('https://n.kihtrak.com/?project='+notibot_project+'&title=Guest%20Door%20Open%20Request&body=Valid:%20'+str(valid))
+                valid = True
+            requests.get('https://n.kihtrak.com/?project='+notibot_project+'&title=Guest%20Door%20Open%20Request&body=Valid:%20'+str(valid))
         if valid:
             asyncio.run_coroutine_threadsafe(open_door(), loop)
             return 'Done'
