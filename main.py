@@ -132,12 +132,14 @@ def server():
             valid = True
         if request.json["password"] == password:
             valid = True
-        if request.json["password"] == guestpassword:
+        if guestpassword!= "" and request.json["password"] == guestpassword:
             now = datetime.datetime.now()
             # Monday is 0
             if (1 == now.weekday() or 3 == now.weekday()) and datetime.time(hour=8, minute=30) <= now.time() <= datetime.time(hour=9, minute=30):
                 valid = True
             notif_call('Guest%20Door%20Open%20Request&body=Valid%3A%20'+str(valid))
+            if not valid:
+                return "Guest password not allowed at this time"
         if valid:
             asyncio.run_coroutine_threadsafe(open_door(), loop)
             return 'Done'
