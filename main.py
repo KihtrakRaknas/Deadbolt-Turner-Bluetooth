@@ -137,7 +137,7 @@ def server():
             # Monday is 0
             if (1 == now.weekday() or 3 == now.weekday()) and datetime.time(hour=8, minute=30) <= now.time() <= datetime.time(hour=9, minute=30):
                 valid = True
-            notif_call('Guest%20Door%20Open%20Request&body=Valid:%20'+str(valid))
+            notif_call('Guest%20Door%20Open%20Request&body=Valid%3A%20'+str(valid))
         if valid:
             asyncio.run_coroutine_threadsafe(open_door(), loop)
             return 'Done'
