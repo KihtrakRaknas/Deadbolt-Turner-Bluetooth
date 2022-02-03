@@ -147,7 +147,7 @@ def server():
         return 'Invalid Password'
 
     @app.route('/reboot', methods=['GET', 'POST'])
-    def respond():
+    def reboot():
         if request.json["password"] != password:
             return "Invalid Password"
         os.system('sudo shutdown -r now')
