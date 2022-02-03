@@ -8,6 +8,7 @@ import atexit
 import asyncio
 import threading
 import datetime
+import os
 from flask import Flask, request
 app = Flask(__name__)
 
@@ -126,7 +127,7 @@ async def open_door():
 def server():
     @app.route('/webhook', methods=['GET', 'POST'])
     def respond():
-        print("webhook called");
+        print("webhook called")
         valid = False
         if password == "":
             valid = True
@@ -137,14 +138,21 @@ def server():
             # Monday is 0
             if (1 == now.weekday() or 3 == now.weekday()) and datetime.time(hour=8, minute=30) <= now.time() <= datetime.time(hour=9, minute=30):
                 valid = True
-            notif_call('Guest%20Door%20Open%20Request&body=Valid%3A%20'+str(valid))
+            notif_call('Guest%20Door%20Open%20Request')#&body=Valid%3A%20'+str(valid))
             if not valid:
                 return "Guest password not allowed at this time"
         if valid:
             asyncio.run_coroutine_threadsafe(open_door(), loop)
             return 'Done'
-        return 'Invalid Password';
+        return 'Invalid Password'
+
+    @app.route('/reboot', methods=['GET', 'POST'])
+        def respond():
+            if request.json["password"] != password:
+                return "Invalid Password"
+            os.system('sudo shutdown -r now')
     from waitress import serve
+    
     serve(app, host="0.0.0.0", port=8080)
     # app.run()
 
