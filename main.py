@@ -147,10 +147,10 @@ def server():
         return 'Invalid Password'
 
     @app.route('/reboot', methods=['GET', 'POST'])
-        def respond():
-            if request.json["password"] != password:
-                return "Invalid Password"
-            os.system('sudo shutdown -r now')
+    def respond():
+        if request.json["password"] != password:
+            return "Invalid Password"
+        os.system('sudo shutdown -r now')
     from waitress import serve
     
     serve(app, host="0.0.0.0", port=8080)
