@@ -71,7 +71,7 @@ async def main():
             rssi = rssi[0]
 
             old_rssis.append(rssi)
-            if len(old_rssis) > 100:
+            if len(old_rssis) > 60:
                 old_rssis.pop(0)
 
             if old_rssi is None:
