@@ -64,7 +64,7 @@ async def main():
         if rssi is None:
             if not (old_rssi is None):
                 old_rssi = None
-                old_rssis = [-50]*100
+                old_rssis = [-50]*60
                 # loop = asyncio.get_event_loop()
                 asyncio.create_task(notif_call("phone%20lost"))
         else:
@@ -78,8 +78,8 @@ async def main():
                 old_rssi = rssi
                 asyncio.create_task(notif_call("phone%20detected"))
             else:
-                print(str(all(-20 <= el <= 0 for el in (old_rssis[-5:]))) + " & " + str(not any(-20 <= el <= 0 for el in (old_rssis[:80]))))
-                if all(-20 <= el <= 0 for el in (old_rssis[-5:])) and not any(-20 <= el <= 0 for el in (old_rssis[:80])):
+                print(str(all(-30 <= el <= 0 for el in (old_rssis[-5:]))) + " & " + str(not any(-30 <= el <= 0 for el in (old_rssis[:40]))))
+                if all(-30 <= el <= 0 for el in (old_rssis[-5:])) and not any(-30 <= el <= 0 for el in (old_rssis[:40])):
                     asyncio.create_task(open_door())
         await asyncio.sleep(1)
 
