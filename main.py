@@ -66,7 +66,7 @@ async def main():
                 old_rssi = None
                 old_rssis = [-50]*60
                 # loop = asyncio.get_event_loop()
-                asyncio.create_task(notif_call("phone%20lost"))
+                # asyncio.create_task(notif_call("phone%20lost"))
         else:
             rssi = rssi[0]
 
@@ -89,7 +89,7 @@ async def open_door():
     if motor_lock.locked():
         return
     async with motor_lock:
-        asyncio.create_task(notif_call("open%20door"))
+        asyncio.create_task(notif_call("opened%20door"))
         gpio.output(25, True) # Stop the motor from sleeping
         gpio.output(23, False) # Set the direction
 
@@ -121,7 +121,7 @@ async def open_door():
             #await asyncio.sleep(WaitTime)
 
         gpio.output(25, False)  # Motor goes back to sleeping
-        asyncio.create_task(notif_call("close%20door"))
+        # asyncio.create_task(notif_call("close%20door"))
 
 
 def server():
