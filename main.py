@@ -78,8 +78,8 @@ async def main():
                 old_rssi = rssi
                 asyncio.create_task(notif_call("phone%20detected"))
             else:
-                print(str(all(-25 <= el <= 0 for el in (old_rssis[-3:]))) + " & " + str(not any(-25 <= el <= 0 for el in (old_rssis[:40]))))
-                if all(-25 <= el <= 0 for el in (old_rssis[-3:])) and not any(-25 <= el <= 0 for el in (old_rssis[:40])):
+                print(str(all(-25 <= el <= 0 for el in (old_rssis[-4:]))) + " & " + str(not any(-25 <= el <= 0 for el in (old_rssis[:40]))))
+                if all(-25 <= el <= 0 for el in (old_rssis[-4:])) and not any(-25 <= el <= 0 for el in (old_rssis[:40])):
                     asyncio.create_task(open_door())
         await asyncio.sleep(1)
 
@@ -106,7 +106,7 @@ async def open_door():
             time.sleep(WaitTime)
             #await asyncio.sleep(WaitTime)
 
-        await asyncio.sleep(15)
+        await asyncio.sleep(20)
         
         StepCounter = 0
         gpio.output(23, True) # Reverse direction
