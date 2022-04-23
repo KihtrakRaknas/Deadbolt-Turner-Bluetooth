@@ -133,6 +133,8 @@ def server():
             valid = True
         if request.json["password"] == password:
             valid = True
+        if request.args['password'] == password:
+            valid = True
         if guestpassword!= "" and request.json["password"] == guestpassword:
             now = datetime.datetime.now()
             # Monday is 0
