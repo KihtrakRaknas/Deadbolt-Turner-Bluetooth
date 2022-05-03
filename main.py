@@ -76,7 +76,7 @@ async def main():
 
             if old_rssi is None:
                 old_rssi = rssi
-                asyncio.create_task(notif_call("phone%20detected"))
+                #asyncio.create_task(notif_call("phone%20detected"))
             else:
                 print(str(all(-25 <= el <= 0 for el in (old_rssis[-4:]))) + " & " + str(not any(-25 <= el <= 0 for el in (old_rssis[:40]))))
                 if all(-25 <= el <= 0 for el in (old_rssis[-4:])) and not any(-25 <= el <= 0 for el in (old_rssis[:40])):
