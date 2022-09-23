@@ -91,7 +91,7 @@ async def open_door():
     async with motor_lock:
         asyncio.create_task(notif_call("opened%20door"))
         gpio.output(25, True) # Stop the motor from sleeping
-        gpio.output(23, False) # Set the direction
+        gpio.output(23, True) # Set the direction
 
         StepCounter = 0
         WaitTime = 0.0002
