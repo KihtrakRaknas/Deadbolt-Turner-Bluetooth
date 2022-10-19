@@ -95,7 +95,7 @@ async def open_door():
 
         StepCounter = 0
         WaitTime = 0.0002
-        Steps = 4900
+        Steps = 2000
         while StepCounter < Steps:
             # turning the gpio on and off tells the easy driver to take one step
             gpio.output(24, True)
@@ -108,8 +108,9 @@ async def open_door():
 
         await asyncio.sleep(20)
         
+        """
         StepCounter = 0
-        gpio.output(23, True) # Reverse direction
+        gpio.output(23, False) # Reverse direction
         while StepCounter < Steps:
             # turning the gpio on and off tells the easy driver to take one step
             gpio.output(24, True)
@@ -119,6 +120,7 @@ async def open_door():
             # Wait before taking the next step...this controls rotation speed
             time.sleep(WaitTime)
             #await asyncio.sleep(WaitTime)
+        """
 
         gpio.output(25, False)  # Motor goes back to sleeping
         # asyncio.create_task(notif_call("close%20door"))
