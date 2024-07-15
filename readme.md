@@ -1,5 +1,8 @@
 # Door Handle Automator
 
+## Demo Video
+You can see a demo here: [https://youtu.be/ZAB0t-3RGFY?si=TFmU06qy9ATIXA8a](https://youtu.be/ZAB0t-3RGFY?si=TFmU06qy9ATIXA8a)
+
 ## Set Up
 This code was written to run on a raspberry pi. I have tested both a raspberry pi 4 and a raspberry pi zero. The set up instructions for both devices are the same.
 ### Install Requirements
