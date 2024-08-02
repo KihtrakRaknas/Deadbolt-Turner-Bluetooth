@@ -12,9 +12,25 @@ import os
 from flask import Flask, request
 app = Flask(__name__)
 
+# Stepper motor constants
+STEPTIME = 0.0002
+STEPS = 1960
+PRIMESTEPS = 1500
+SLEEPPIN = 25
+STEPPIN = 24
+DIRPIN = 23
+CLOCKWISE = True
+RESETTIME = .4
+HOLDTIME = 20
+
+# Bluetooth constants
+HISTORYLENGTH = 200
+CLOSELENGTH = 4
+CLOSETHRESH = 3
+FARLENGTH = 40
+FARTHRESH = 12
 
 # iphone 13 pro: 'F8:C3:CC:9C:C9:6C'
-
 
 motor_lock = asyncio.Lock()
 
@@ -58,28 +74,35 @@ async def main():
     btrssi = BluetoothRSSI(addr=BT_ADDR)
     old_rssi = None
     old_rssis = []
+    delete_me = False
     while True:
         rssi = btrssi.request_rssi()
         print(rssi)
         if rssi is None:
+            old_rssis = [-100]*HISTORYLENGTH
             if not (old_rssi is None):
                 old_rssi = None
-                old_rssis = [-50]*60
-                # loop = asyncio.get_event_loop()
                 # asyncio.create_task(notif_call("phone%20lost"))
+                delete_me = False
         else:
             rssi = rssi[0]
 
             old_rssis.append(rssi)
-            if len(old_rssis) > 60:
+            if len(old_rssis) > HISTORYLENGTH:
                 old_rssis.pop(0)
 
             if old_rssi is None:
                 old_rssi = rssi
-                #asyncio.create_task(notif_call("phone%20detected"))
+                # asyncio.create_task(notif_call("phone%20detected"))
             else:
-                print(str(all(-22 <= el <= 0 for el in (old_rssis[-4:]))) + " & " + str(not any(-22 <= el <= 0 for el in (old_rssis[:40]))))
-                if all(-22 <= el <= 0 for el in (old_rssis[-4:])) and not any(-22 <= el <= 0 for el in (old_rssis[:40])):
+                print(str(old_rssis[:FARLENGTH]))
+                print(str(all(-CLOSETHRESH <= el <= 0 for el in (old_rssis[-CLOSELENGTH:]))) + " & " + str(not any(-FARTHRESH <= el <= 0 for el in (old_rssis[:FARLENGTH]))))
+                if any(-FARTHRESH <= el <= 0 for el in (old_rssis[:FARLENGTH])) and not delete_me:
+                    delete_me = True
+                    # asyncio.create_task(notif_call("Too late: "+str(old_rssis)))
+
+                if all(-CLOSETHRESH <= el <= 0 for el in (old_rssis[-CLOSELENGTH:])) and not any(-FARTHRESH <= el <= 0 for el in (old_rssis[:FARLENGTH])):
+                    old_rssis = [0]*HISTORYLENGTH
                     asyncio.create_task(open_door())
         await asyncio.sleep(1)
 
@@ -89,40 +112,38 @@ async def open_door():
     if motor_lock.locked():
         return
     async with motor_lock:
+        def init():
+            gpio.output(SLEEPPIN, True) # Stop the motor from sleeping
+            gpio.output(DIRPIN, CLOCKWISE) # Set the direction
+            
+        def step(steps):
+            stepCounter = 0
+            while stepCounter < steps:
+                # Tell the easy driver to take one step
+                gpio.output(STEPPIN, True)
+                gpio.output(STEPPIN, False)
+                stepCounter += 1
+    
+                # Wait before taking the next step...this controls rotation speed
+                time.sleep(STEPTIME)
+
+        async def sleep():
+            gpio.output(25, False)  # Motor goes back to sleeping
+            await asyncio.sleep(RESETTIME)
+            
         asyncio.create_task(notif_call("opened%20door"))
-        gpio.output(25, True) # Stop the motor from sleeping
-        gpio.output(23, True) # Set the direction
-
-        StepCounter = 0
-        WaitTime = 0.0002
-        Steps = 2000
-        while StepCounter < Steps:
-            # turning the gpio on and off tells the easy driver to take one step
-            gpio.output(24, True)
-            gpio.output(24, False)
-            StepCounter += 1
-
-            # Wait before taking the next step...this controls rotation speed
-            time.sleep(WaitTime)
-            #await asyncio.sleep(WaitTime)
-
-        await asyncio.sleep(20)
         
-        """
-        StepCounter = 0
-        gpio.output(23, False) # Reverse direction
-        while StepCounter < Steps:
-            # turning the gpio on and off tells the easy driver to take one step
-            gpio.output(24, True)
-            gpio.output(24, False)
-            StepCounter += 1
-
-            # Wait before taking the next step...this controls rotation speed
-            time.sleep(WaitTime)
-            #await asyncio.sleep(WaitTime)
-        """
-
-        gpio.output(25, False)  # Motor goes back to sleeping
+        init()
+        step(PRIMESTEPS)
+        await sleep()
+        # init()
+        # step(PRIMESTEPS)
+        # await sleep()
+        init()
+        step(STEPS)
+        await asyncio.sleep(HOLDTIME)
+        await sleep()
+        
         # asyncio.create_task(notif_call("close%20door"))
 
 
