@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+bt-proximity = "*"
+flask = "*"
+requests-async = "*"
+python-dotenv = "*"
+waitress = "*"
+gpiozero = "*"
+
+[dev-packages]
