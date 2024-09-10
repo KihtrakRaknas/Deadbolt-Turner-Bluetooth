@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 import os
 from dotenv import load_dotenv
-from bt_proximity import BluetoothRSSI
+from bt_proximity_patch import BluetoothRSSIPatched
 import requests_async as requests
-import RPi.GPIO as gpio  # https://pypi.python.org/pypi/RPi.GPIO more info
 import asyncio
 import threading
-import os
 from flask import Flask, request
 from gpiozero.pins.pigpio import PiGPIOFactory
 from gpiozero import Device, AngularServo
+from waitress import serve
+from functools import wraps
 Device.pin_factory = PiGPIOFactory()
 app = Flask(__name__)
 
@@ -38,7 +38,7 @@ async def main():
     t1 = threading.Thread(target=server)
     t1.start()
 
-    btrssi = BluetoothRSSI(addr=BT_ADDR)
+    btrssi = BluetoothRSSIPatched(addr=BT_ADDR)
     old_rssis = []
     
     def add_rssi(rssi_val):
@@ -48,23 +48,20 @@ async def main():
     
     device_present = None
     while True:
-        rssi = btrssi.request_rssi()
+        rssi = btrssi.request_rssi_int()
         print(rssi)
-        if rssi is not None:
-            add_rssi(rssi[0])
+        add_rssi(rssi)
+        
+        if all(el is not None and -CLOSETHRESH <= el for el in old_rssis[-CLOSELENGTH:]):
+            if device_present != True:
+                device_present = True
+                asyncio.create_task(open_door())
+        elif rssi is None: 
+        #elif any(el is None for el in old_rssis):
+            if device_present != False:
+                device_present = False
+                asyncio.create_task(close_door())
                 
-            if all(el is None for el in old_rssis):
-                if device_present != False:
-                    device_present = False
-                    asyncio.create_task(close_door())
-
-            if all(-CLOSETHRESH <= el <= 0 for el in old_rssis[-CLOSELENGTH:]):
-                if device_present != True:
-                    device_present = True
-                    asyncio.create_task(open_door())
-        else:
-            add_rssi(None)
-            
         await asyncio.sleep(1)
 
 
@@ -84,46 +81,47 @@ async def close_door():
     door_servo.detach()
 
 
-def valid_password(request):
-    valid = False
-    if PASSWORD == "":
-        valid = True
-    if request.method == "GET" and request.args['password'] == PASSWORD:
-        valid = True
-    if request.method == "POST":
-        if request.json["password"] == PASSWORD:
-            valid = True
-    return valid
-
 def server():
+    def valid_password(func):
+        @wraps(func)
+        def valid_password_wrapper(*args, **kwargs):
+            if PASSWORD == "":
+                return func(*args, **kwargs)
+            if request.method == "GET" and request.args['password'] == PASSWORD:
+                return func(*args, **kwargs)
+            if request.method == "POST":
+                if request.json["password"] == PASSWORD:
+                    return func(*args, **kwargs)
+            return 'Invalid Password'
+        
+        return valid_password_wrapper
+    
+
     @app.route('/open', methods=['GET', 'POST'])
-    def respond():
+    @valid_password
+    def respond_open():
         print("open called")
-        if valid_password(request):
-            asyncio.run_coroutine_threadsafe(open_door(), loop)
-            return 'Done'
-        return 'Invalid Password'
+        asyncio.run_coroutine_threadsafe(open_door(), loop)
+        print("return done")
+        return 'Done'
     
     
     @app.route('/close', methods=['GET', 'POST'])
-    def respond():
+    @valid_password
+    def respond_close():
         print("close called")
-        if valid_password(request):
-            asyncio.run_coroutine_threadsafe(close_door(), loop)
-            return 'Done'
-        return 'Invalid Password'
+        asyncio.run_coroutine_threadsafe(close_door(), loop)
+        return 'Done'
 
 
     @app.route('/reboot', methods=['GET', 'POST'])
+    @valid_password
     def reboot():
-        if valid_password(request):
-            os.system('sudo shutdown -r now')
-            return 'Done'
-        return "Invalid Password"
-    from waitress import serve
+        os.system('sudo shutdown -r now')
+        return 'Done'
     
     serve(app, host="0.0.0.0", port=8080)
-    # app.run()
+    print("Listening on port 8080")
 
 
 async def notif_call(str):

@@ -18,10 +18,11 @@ This code was written to run on a raspberry pi. I have tested both a raspberry p
    sudo apt-get install --no-install-recommends bluetooth
    ```
 
-2. Install an additional module:
+2. Install additional modules:
 
    ```sh
    sudo apt-get install python3-bluez
+   sudo apt-get install python3-pigpio
    ```
 
 3. Install python modules:
@@ -68,7 +69,7 @@ other variables.
 10. Add code to run the script at start up:
 
    ```sh
-   sudo python ~/Documents/Deadbolt-Turner-Bluetooth/main.py &
+   pipenv run python ~/Documents/Deadbolt-Turner-Bluetooth/main.py &
    ```
 
 11. Reboot the pi and it should start working

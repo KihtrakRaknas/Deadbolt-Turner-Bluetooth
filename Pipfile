@@ -9,6 +9,7 @@ flask = "*"
 requests-async = "*"
 python-dotenv = "*"
 waitress = "*"
-gpiozero = "*"
+gpiozero = "*"  
+pybluez = {git = "git+https://github.com/pybluez/pybluez.git#egg=pybluez"}
 
 [dev-packages]
