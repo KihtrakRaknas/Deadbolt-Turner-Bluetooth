@@ -53,7 +53,7 @@ async def main():
         add_rssi(rssi)
         
         if all(el is not None and -CLOSETHRESH <= el for el in old_rssis[-CLOSELENGTH:]):
-            if device_present != True:
+            if device_present == False:
                 device_present = True
                 asyncio.create_task(open_door())
         elif rssi is None: 
