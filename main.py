@@ -25,6 +25,7 @@ PORT = int(os.getenv('PORT', "8080"))
 HISTORYLENGTH = int(os.getenv('TAPE_LENGTH', "200"))
 CLOSELENGTH = int(os.getenv('CLOSENESS_DELAY', "4"))
 CLOSETHRESH = int(os.getenv('CLOSENESS_THRESH', "3"))
+DOOROPENDURATION = int(os.getenv('DOOROPENDURATION', "60"))
 
 # The MG90S spec sheet indicates that the min is .001 and the max is .002.
 # Using .0005 and .0025 as the max and min results in the expected 180 degrees
@@ -56,7 +57,10 @@ async def main():
         if all(el is not None and -CLOSETHRESH <= el for el in old_rssis[-CLOSELENGTH:]):
             if device_present == False:
                 device_present = True
-                asyncio.create_task(open_door())
+                if DOOROPENDURATION != -1:
+                    asyncio.create_task(open_and_close_door())
+                else:
+                    asyncio.create_task(close_door())
         elif rssi is None: 
         #elif any(el is None for el in old_rssis):
             if device_present != False:
@@ -64,6 +68,17 @@ async def main():
                 asyncio.create_task(close_door())
                 
         await asyncio.sleep(1)
+
+async def open_and_close_door():
+    print("open and close door called")
+    asyncio.create_task(notif_call(f"Opened door for {DOOROPENDURATION} seconds"))
+    door_servo.angle = OPEN_ANGLE
+    await asyncio.sleep(3)
+    door_servo.detach()
+    await asyncio.sleep(DOOROPENDURATION)
+    door_servo.angle = CLOSE_ANGLE
+    await asyncio.sleep(3)
+    door_servo.detach()
 
 
 async def open_door():
