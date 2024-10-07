@@ -19,6 +19,7 @@ NOTI_PROJ = os.getenv('NOTI_PROJ', "")
 PASSWORD = os.getenv('PASSWORD', "")
 OPEN_ANGLE = int(os.getenv('OPEN_ANGLE', "45"))
 CLOSE_ANGLE = int(os.getenv('CLOSE_ANGLE', "-45"))
+PORT = int(os.getenv('PORT', "8080"))
 
 # Bluetooth constants
 HISTORYLENGTH = int(os.getenv('TAPE_LENGTH', "200"))
@@ -67,7 +68,7 @@ async def main():
 
 async def open_door():
     print("open door called")
-    asyncio.create_task(notif_call("opened door"))
+    asyncio.create_task(notif_call("Opened door"))
     door_servo.angle = OPEN_ANGLE
     await asyncio.sleep(3)
     door_servo.detach()
@@ -75,7 +76,7 @@ async def open_door():
     
 async def close_door():
     print("close door called")
-    asyncio.create_task(notif_call("closed door"))
+    asyncio.create_task(notif_call("Closed door"))
     door_servo.angle = CLOSE_ANGLE
     await asyncio.sleep(3)
     door_servo.detach()
@@ -120,8 +121,8 @@ def server():
         os.system('sudo shutdown -r now')
         return 'Done'
     
-    serve(app, host="0.0.0.0", port=8080)
-    print("Listening on port 8080")
+    asyncio.run_coroutine_threadsafe(notif_call(f"Starting server on port {PORT}"), loop)
+    serve(app, host="0.0.0.0", port=PORT)
 
 
 async def notif_call(str):
