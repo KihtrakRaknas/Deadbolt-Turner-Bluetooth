@@ -13,3 +13,6 @@ gpiozero = "*"
 pybluez = {git = "git+https://github.com/pybluez/pybluez.git#egg=pybluez"}
 
 [dev-packages]
+
+[requires]
+python_version = "3.8"
