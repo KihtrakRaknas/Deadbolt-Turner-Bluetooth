@@ -57,10 +57,7 @@ async def main():
         if all(el is not None and -CLOSETHRESH <= el for el in old_rssis[-CLOSELENGTH:]):
             if device_present == False:
                 device_present = True
-                if DOOROPENDURATION != -1:
-                    asyncio.create_task(open_and_close_door())
-                else:
-                    asyncio.create_task(close_door())
+                asyncio.create_task(open_and_close_door())
         elif rssi is None: 
         #elif any(el is None for el in old_rssis):
             if device_present != False:
@@ -70,6 +67,9 @@ async def main():
         await asyncio.sleep(1)
 
 async def open_and_close_door():
+    if DOOROPENDURATION == -1:
+        await open_door()
+        return
     print("open and close door called")
     asyncio.create_task(notif_call(f"Opened door for {DOOROPENDURATION} seconds"))
     door_servo.angle = OPEN_ANGLE
