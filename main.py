@@ -30,7 +30,7 @@ DOOROPENDURATION = int(os.getenv('DOOROPENDURATION', "60"))
 # The MG90S spec sheet indicates that the min is .001 and the max is .002.
 # Using .0005 and .0025 as the max and min results in the expected 180 degrees
 # of motion.
-door_servo = AngularServo(14, max_pulse_width=2.5/1000, min_pulse_width=.5/1000, 
+door_servo = AngularServo(12, max_pulse_width=2.5/1000, min_pulse_width=.5/1000, 
                           initial_angle=None)
 
 
