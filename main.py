@@ -2,7 +2,7 @@
 import os
 from dotenv import load_dotenv
 from bt_proximity_patch import BluetoothRSSIPatched
-import requests_async as requests
+import requests
 import asyncio
 import threading
 from flask import Flask, request
@@ -142,7 +142,7 @@ def server():
 
 async def notif_call(str):
     if NOTI_PROJ != '':
-        await requests.get(f"https://n.kihtrak.com/?project={NOTI_PROJ}&title={str}")
+        requests.get(f"https://n.kihtrak.com/?project={NOTI_PROJ}&title={str}")
 
 
 if __name__ == '__main__':

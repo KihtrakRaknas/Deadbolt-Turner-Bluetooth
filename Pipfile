@@ -6,13 +6,14 @@ name = "pypi"
 [packages]
 bt-proximity = "*"
 flask = "*"
-requests-async = "*"
 python-dotenv = "*"
 waitress = "*"
 gpiozero = "*"  
 pybluez = {git = "git+https://github.com/pybluez/pybluez.git#egg=pybluez"}
+pigpio = "*"
+requests = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8"
+python_version = "3.11"
