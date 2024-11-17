@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 from dotenv import load_dotenv
-from bt_proximity_patch import BluetoothRSSIPatched
+from proximity import get_distance_to_device
 import requests
 import asyncio
 import threading
@@ -40,26 +40,24 @@ async def main():
     t1 = threading.Thread(target=server)
     t1.start()
 
-    btrssi = BluetoothRSSIPatched(addr=BT_ADDR)
-    old_rssis = []
+    old_distances = []
     
-    def add_rssi(rssi_val):
-        old_rssis.append(rssi_val)
-        if len(old_rssis) > HISTORYLENGTH:
-            old_rssis.pop(0)
+    def add_to_tape(rssi_val):
+        old_distances.append(rssi_val)
+        if len(old_distances) > HISTORYLENGTH:
+            old_distances.pop(0)
     
     device_present = None
     while True:
-        rssi = btrssi.request_rssi_int()
-        print(rssi)
-        add_rssi(rssi)
+        distance = get_distance_to_device(BT_ADDR)
+        print(distance)
+        add_to_tape(distance)
         
-        if all(el is not None and -CLOSETHRESH <= el for el in old_rssis[-CLOSELENGTH:]):
+        if all(el is not None and el <= CLOSETHRESH for el in old_distances[-CLOSELENGTH:]):
             if device_present == False:
                 device_present = True
                 asyncio.create_task(open_and_close_door())
-        elif rssi is None: 
-        #elif any(el is None for el in old_rssis):
+        elif distance is None: 
             if device_present != False:
                 device_present = False
                 asyncio.create_task(close_door())

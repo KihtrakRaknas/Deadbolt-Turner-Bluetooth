@@ -9,9 +9,9 @@ flask = "*"
 python-dotenv = "*"
 waitress = "*"
 gpiozero = "*"  
-pybluez = {git = "git+https://github.com/pybluez/pybluez.git#egg=pybluez"}
 pigpio = "*"
 requests = "*"
+bluepy = "*"
 
 [dev-packages]
 
