@@ -24,7 +24,7 @@ PORT = int(os.getenv('PORT', "8080"))
 # Bluetooth constants
 HISTORYLENGTH = int(os.getenv('TAPE_LENGTH', "200"))
 CLOSELENGTH = int(os.getenv('CLOSENESS_DELAY', "4"))
-CLOSETHRESH = int(os.getenv('CLOSENESS_THRESH', "3"))
+CLOSETHRESH = float(os.getenv('CLOSENESS_THRESH', "3"))
 DOOROPENDURATION = int(os.getenv('DOOROPENDURATION', "60"))
 
 # The MG90S spec sheet indicates that the min is .001 and the max is .002.
@@ -39,30 +39,35 @@ async def main():
     loop = asyncio.get_event_loop()
     t1 = threading.Thread(target=server)
     t1.start()
+    t2 = threading.Thread(target=monitor_bluetooth)
+    t2.start()
+    while True:
+        await asyncio.sleep(1)
 
+def monitor_bluetooth():
     old_distances = []
-    
-    def add_to_tape(rssi_val):
-        old_distances.append(rssi_val)
+
+    def add_to_tape(val):
+        old_distances.append(val)
         if len(old_distances) > HISTORYLENGTH:
             old_distances.pop(0)
-    
+
     device_present = None
     while True:
-        distance = get_distance_to_device(BT_ADDR)
+        distance = get_distance_to_device(BT_ADDR, timeout=45)
         print(distance)
         add_to_tape(distance)
-        
         if all(el is not None and el <= CLOSETHRESH for el in old_distances[-CLOSELENGTH:]):
             if device_present == False:
                 device_present = True
-                asyncio.create_task(open_and_close_door())
-        elif distance is None: 
+                asyncio.run_coroutine_threadsafe(open_and_close_door(), loop)
+        elif distance is None:
             if device_present != False:
                 device_present = False
-                asyncio.create_task(close_door())
-                
-        await asyncio.sleep(1)
+                asyncio.run_coroutine_threadsafe(close_door(), loop)
+
+        asyncio.run_coroutine_threadsafe(asyncio.sleep(1), loop)
+
 
 async def open_and_close_door():
     if DOOROPENDURATION == -1:
