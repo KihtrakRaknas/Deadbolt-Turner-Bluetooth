@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import time
 from dotenv import load_dotenv
 from proximity import get_distance_to_device
 import requests
@@ -25,6 +26,7 @@ PORT = int(os.getenv('PORT', "8080"))
 HISTORYLENGTH = int(os.getenv('TAPE_LENGTH', "200"))
 CLOSELENGTH = int(os.getenv('CLOSENESS_DELAY', "4"))
 CLOSETHRESH = float(os.getenv('CLOSENESS_THRESH', "3"))
+EXITCLOSETHRESH = float(os.getenv('CLOSENESS_EXIT_THRESH', ".75"))
 DOOROPENDURATION = int(os.getenv('DOOROPENDURATION', "60"))
 
 # The MG90S spec sheet indicates that the min is .001 and the max is .002.
@@ -52,21 +54,26 @@ def monitor_bluetooth():
         if len(old_distances) > HISTORYLENGTH:
             old_distances.pop(0)
 
-    device_present = None
+    device_present_flag = None
+    someone_home = False
+    exiting = False
     while True:
-        distance = get_distance_to_device(BT_ADDR, timeout=45)
+        distance = get_distance_to_device(BT_ADDR, timeout=75)  
         print(distance)
         add_to_tape(distance)
-        if all(el is not None and el <= CLOSETHRESH for el in old_distances[-CLOSELENGTH:]):
-            if device_present == False:
-                device_present = True
-                asyncio.run_coroutine_threadsafe(open_and_close_door(), loop)
-        elif distance is None:
-            if device_present != False:
-                device_present = False
-                asyncio.run_coroutine_threadsafe(close_door(), loop)
+        if device_present_flag == False and all(el is not None and el <= CLOSETHRESH for el in old_distances[-CLOSELENGTH:]):
+            device_present_flag = True
+            asyncio.run_coroutine_threadsafe(open_and_close_door(), loop)
+        elif all(el is not None and el <= EXITCLOSETHRESH for el in old_distances[-CLOSELENGTH:]):
+            if exiting == False:
+                exiting = True
+                asyncio.run_coroutine_threadsafe(open_door(), loop)
+        elif device_present_flag != False and distance is None:
+            device_present_flag = False
+            exiting = False
+            asyncio.run_coroutine_threadsafe(close_door(), loop)
 
-        asyncio.run_coroutine_threadsafe(asyncio.sleep(1), loop)
+        time.sleep(1)
 
 
 async def open_and_close_door():
