@@ -30,7 +30,7 @@ def rssi_to_distance(rssi, calibrated_rssi=-50):
     return 10 ** ((calibrated_rssi - rssi) / (10 * 2))
 
 def get_distance_to_device(target_address, timeout=30):
-    max_retries = 2
+    max_retries = 5
     for attempt in range(max_retries):
         try:
             rssi = get_device_rssi(target_address, timeout=timeout)
@@ -38,7 +38,7 @@ def get_distance_to_device(target_address, timeout=30):
         except BTLEDisconnectError:
             if attempt == max_retries - 1:
                 raise
-            time.sleep(5)
+            time.sleep(5*2**attempt)
             continue
     if rssi is not None:
         return rssi_to_distance(rssi)
