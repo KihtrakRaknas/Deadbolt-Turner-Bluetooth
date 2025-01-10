@@ -34,7 +34,7 @@ DOOROPENDURATION = int(os.getenv('DOOROPENDURATION', "60"))
 # of motion.
 door_servo = AngularServo(12, max_pulse_width=2.5/1000, min_pulse_width=.5/1000, 
                           initial_angle=None)
-
+someone_home = False
 
 async def main():
     global loop
@@ -55,22 +55,24 @@ def monitor_bluetooth():
             old_distances.pop(0)
 
     device_present_flag = None
-    someone_home = False
-    exiting = False
+    
+    lastTempOpen = 0
     while True:
-        distance = get_distance_to_device(BT_ADDR, timeout=75)  
+        distance = get_distance_to_device(BT_ADDR, timeout=80)  
+        global someone_home
+        someone_home = distance is not None
         print(distance)
         add_to_tape(distance)
         if device_present_flag == False and all(el is not None and el <= CLOSETHRESH for el in old_distances[-CLOSELENGTH:]):
             device_present_flag = True
             asyncio.run_coroutine_threadsafe(open_and_close_door(), loop)
         elif all(el is not None and el <= EXITCLOSETHRESH for el in old_distances[-CLOSELENGTH:]):
-            if exiting == False:
-                exiting = True
-                asyncio.run_coroutine_threadsafe(open_door(), loop)
+            time_between_auto_open = DOOROPENDURATION if DOOROPENDURATION != -1 else 60
+            if lastTempOpen + time_between_auto_open < time.time():
+                lastTempOpen = time.time()
+                asyncio.run_coroutine_threadsafe(open_and_close_door(), loop)
         elif device_present_flag != False and distance is None:
             device_present_flag = False
-            exiting = False
             asyncio.run_coroutine_threadsafe(close_door(), loop)
 
         time.sleep(1)
@@ -138,6 +140,12 @@ def server():
         print("close called")
         asyncio.run_coroutine_threadsafe(close_door(), loop)
         return 'Done'
+    
+    
+    @app.route('/presence', methods=['GET'])
+    @valid_password
+    def presence():
+        return str(someone_home)
 
 
     @app.route('/reboot', methods=['GET', 'POST'])
